@@ -1,0 +1,90 @@
+\documentclass[AutoFakeBold]{ctexart}	% AutoFakeBold 伪黑体加粗
+
+%*****************超链接***********************************
+% colorlinks 将超链接以颜色来标识，默认用方框来标识
+% url颜色、引用颜色
+\usepackage[colorlinks,urlcolor=black,linkcolor=black]{hyperref}
+
+%*****************编号**********************************
+\usepackage{enumerate}
+\usepackage{enumitem}
+\setlist[enumerate,1]{label=(\arabic*),labelindent=\parindent,leftmargin=*}	% 表示对一级列表进行设置(1)
+\setlist[enumerate,2]{label=(\alph*)}	% 表示对一级列表进行设置(a)
+
+%*****************数学公式**********************************
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+%*****************图片及其相关设置***************************
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{subfigure}	% 子图
+
+%*****************表格及其相关设置***************************
+\usepackage{booktabs}	% 三线表
+\usepackage{multirow}
+\usepackage{array}
+
+%*****************代码环境************************************
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{
+	numbers=left, %设置行号位置
+    numberstyle=\tiny, %设置行号大小
+    keywordstyle=\color{blue}, %设置关键字颜色
+    commentstyle=\color[cmyk]{1,0,1,0}, %设置注释颜色
+    frame=single, %设置边框格式
+    escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+    breaklines, %自动折行
+    extendedchars=false, %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+    xleftmargin=2em,xrightmargin=2em, aboveskip=1em, %设置边距
+    tabsize=4, %设置tab空格数
+    showspaces=false %不显示空格
+}
+
+%*****************题注及其相关设置***************************
+\usepackage{caption}
+\DeclareCaptionFont{heiti}{\heiti}	% 声明题注的字体
+% labelsep=space 将'表1: XXX' 设置为 '表1 XXX '
+% [small, bf, heiti] 黑体 小5 加粗, heiti 前面使用前面定义的 \heiti
+\captionsetup{labelsep=space,font={small,bf,heiti},skip={5pt}}	
+
+%*****************页边距、行间距、字体**********************
+\usepackage[left=2.5cm,right=1.97cm,top=2.5cm,bottom=2.5cm]{geometry}	% 页边距
+\renewcommand{\baselinestretch}{1.25}	% 行间距
+
+%*****************全局英文字体设置为 Times New Roman *******
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+
+%*****************多级标题格式修改**************************
+\ctexset{
+	section={format={\heiti \zihao{4} \bfseries}},	% 加粗
+	subsection={format={\heiti \zihao{5} \bfseries},beforeskip=0pt,afterskip=0pt},	% 段前0pt、段后0pt
+	subsubsection={format={\kaishu \zihao{5}},beforeskip=0pt,afterskip=0pt}	% 段前0pt、段后0pt
+}
+
+%*****************标题************************************
+\title{
+    \heiti \zihao{2}用\LaTeX 排版 
+    \footnotetext{	% 脚标
+        \hskip -6pt 投稿日期：YYYY-MM-DD \\	% 向前移动 6pt
+        \hspace*{1em}项目名称:	% 向后移动 1em
+        \begin{minipage}[t]{0.85 \linewidth}	% [t]顶部对齐, 0.85 的行宽
+            国家自然科学基金资助项目1，国家自然科学基金资助项目2，国家自然科学基金资助项目3，国家自然科学基金资助项目4，国家自然科学基金资助项目5，国家自然科学基金资助项目6，国家自然科学基金资助项目7
+        \end{minipage}}}
+% 作者、联系方式
+\author{
+        \kaishu \zihao{-4} 作者 \\	% 楷体 小四
+        \songti \zihao{-5} 学校\qquad 地址
+}
+\date{}	% 不显示日期
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+	\maketitle	% 显示标题
+	\vspace{-10pt}\input{摘要}	% 标题与摘要之前的间隔减小 10pt
+	\input{页面设置}
+	\input{插入公式}
+	\input{插入图片}
+	\input{附录}	
+\end{document}
