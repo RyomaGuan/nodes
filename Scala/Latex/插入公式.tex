@@ -1,0 +1,41 @@
+\section{插入公式}
+	\LaTeX 相比于word 的优点之一便是公式的兼容性，本文仅对数学符号以及相关公式进行简要的介绍。
+	\subsection{数学符号}
+	在使用数学符号之前需要在导言区使用amssymb宏包，相关命令不予赘述，可以在texstudio 的符号中直接进行选择插入，无需记忆。需要注意的是，在使用数学符号的时候需要在 \$ \$ 内输入。 且由于反斜杠和 dollar 符号以及大括号等特殊符号与 \LaTeX 命令符号存在冲突，这些符号是 \LaTeX 的保留字符，因此在需要输入这些符号的情况下，有特殊的方式，可以参考下面三个实力，更多的保留字符可以自行搜索：\\
+%	\hspace*{3cm}
+	dollar 符号 ~~ \$  \hspace{5cm}	反斜杠 ~~ $\backslash$ \hspace{5cm}大括号    $\left\lbrace \right\rbrace$	 
+	
+	需要注意的是\$ \$ 内的符号都是默认的斜体，因此如需使用正体符号，需要重新定义。
+	\subsection{常见公式} 
+	常见的公式种类分为行内公式和行间公式，行内公式可以直接使用 \$ \$符号进行书写；而行间公式如$$a+b=c$$可通过\$\$ \quad \$\$符号实现，如果需要对公式进行标号以及交叉引用，可以通过equation环境实现。如果需要连续编辑多行公式则可以借助gather环境来实现。示例如下：
+多行公式：
+	\begin{gather}
+		a+b=c \\
+		\alpha + \beta =\gamma \notag \\
+		x+y=z \notag
+	\end{gather}
+	方程组或者分段函数可以用cases环境实现:
+	\begin{equation}
+		\begin{cases}
+			a+b=c \\
+			\alpha + \beta =\gamma  \\
+			x+y=z
+		\end{cases} 
+	\end{equation}
+	\begin{equation}
+		f(x)= 
+		\begin{cases}
+			ax+b+c+1 &if x<\gamma \\
+			\alpha x + \beta &if x>\gamma 
+		\end{cases} 
+	\end{equation}
+	长公式用split环境实现
+	\begin{equation}
+		\begin{split}
+			f(x)&=10000000a^2x+123456789bx+1010101010c+1010101010+\alpha x + \beta + \gamma\\
+			&=15746987\sqrt{\alpha x + \beta}+121212121212\lambda^{ax}x+\frac{1}{\lambda^2}\\
+			&=0
+		\end{split}
+	\end{equation}
+	
+	由于矩阵的用法并不复杂，因此不再单独介绍，如需要了解，附录中有网友对矩阵输入整理的链接。
