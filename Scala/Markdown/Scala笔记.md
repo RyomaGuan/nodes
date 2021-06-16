@@ -572,6 +572,14 @@ scala类的主构造器函数的形参包括三种类型：未用任何修饰、
 1. 未用任何修饰符修饰，这个参数就是一个局部变量
 2. var修饰参数，作为类的成员属性使用，可以修改
 3. val修饰参数，作为类只读属性使用，不能修改
+
+## 封装
+scala 中的 public 属性，底层实际为 private，并通过 get 方法（obj.field()）和 set 方法（obj.field_=(value)）对其进行操作。所以 scala 并不推荐将属性设为 private，再为其设置 public 的 get 和 set 方法的做法。但由于很多 java 框架都利用反射调用 getXXX 和 setXXX 方法，有时候为了和这些框架兼容，也会为 scala 的属性设置 getXXX 和 setXXX 方法（通过 @BeanProperty 注解实现）。
+
+
+## 继承
+1. 子类继承父类的属性和方法（全部，能不能用和访问权限有关系）
+2. 继承的调用顺序：父类构造器 -> 子类构造器
 ```scala
 object Test extends App {
     // A
@@ -623,6 +631,127 @@ class B(s: String) extends A {
     def this() {
         this("")
         println("B this")
+    }
+}
+```
+
+## 抽象属性和抽象方法
+### 抽象属性和抽象方法
+```scala
+abstract class Person{} // 通过abstract关键字标记抽象类
+val|var name:String // 一个属性没有初始化，就是抽象属性;所谓的属性抽象，其实编译时没有属性，只有抽象的类set、get方法，所以类必须为抽象的
+def hello():String // 只声明而没有实现的方法，就是抽象方法
+```
+
+### 继承 & 重写
+1. 如果父类为抽象类，那么子类需要将抽象的属性和方法实现，否则子类也需声明为抽象类
+2. 重写非抽象方法、非抽象属性需要用 override 修饰，重写抽象方法则可以不加 override
+3. 子类中调用父类的方法使用 super 关键字
+4. 具体的属性（非抽象属性）如果要重写，必须声明为不可变 val，而不支持 var。scala 中属性和方法都是动态绑定，而 java 中只有方法为动态绑定（ java 运行时动态绑定针对的范畴只是对象的方法）
+```java
+class Person {
+    public String name = "person";
+
+    public void hello() {
+        System.out.println("hello person");
+    }
+}
+
+class Teacher extends Person {
+    public String name = "teacher";
+
+    @Override
+    public void hello() {
+        System.out.println("hello teacher");
+    }
+}
+
+public class TestDynamic {
+    public static void main(String[] args) {
+        Person teacher = new Teacher();
+        System.out.println(teacher.name);   // person
+        teacher.hello();    // hello teacher
+    }
+}
+```
+
+```scala
+class Person {
+    val name: String = "person"
+
+    def hello(): Unit = {
+        println("hello person")
+    }
+}
+
+class Teacher extends Person {
+    override val name: String = "teacher"
+
+    override def hello(): Unit = {
+        println("hello teacher")
+    }
+}
+
+object Test {
+    def main(args: Array[String]): Unit = {
+        val teacher1: Person = new Teacher
+        println(teacher1.name)  // teacher
+        teacher1.hello()    // hello teacher
+    }
+}
+```
+
+## 匿名子类
+和 java 一样，可以通过包含带有定义或重写的代码块的方式创建一个匿名的子类
+```scala
+abstract class Person {
+    val name: String
+    def hello(): Unit
+}
+
+val person = new Person {
+    override val name: String = "teacher"
+    override def hello(): Unit = println("hello teacher")
+}
+```
+
+## 单例对象（伴生对象）
+java 构造方法私有化，使用公共静态返回本类型的方法。java 中的单例对象无法被回收，单例对象一般是通过静态访问，单例对象在方法区。方法区没有弹栈的概念，引用会一直在，对象不能称为无用对象。
+
+scala 语言是完全面向对象的语言，所以并没有静态的操作（即在 scala 中没有静态的概念）。但是为了能够和 java 语言交互（因为 java 中有静态概念），就产生了一种特殊的对象来模拟类对象，该对象为单例对象。若单例对象名与类名一致，则称该单例对象这个类的伴生对象，这个类的所有“静态”内容都可以放置在它的伴生对象中声明。
+
+### 单例对象语法
+```scala
+object Person {
+    val country: String = "China"
+}
+```
+1. 单例对象采用 object 关键字声明
+2. 单例对象对应的类称之为伴生类，伴生对象的名称应该和伴生类名一致
+3. 单例对象中的属性和方法都可以通过伴生对象名（类名）直接调用访问
+
+### apply 方法
+1. 通过伴生对象的 apply 方法，实现不使用 new 方法创建对象
+2. 如果想让主构造器变成私有的，可以在 () 之前加上 private。如果在主构造方法前增加 private，那么外部无法创建对象。但是伴生类中的私有属性或方法在伴生对象中可以直接使用
+3. apply 方法可以重载
+4. scala 中 obj(arg) 的语句实际是在调用该对象的 apply 方法，即 obj.apply(arg)。用以同一面向对象编程和函数式编程的风格
+5. 当使用 new 关键字构建对象时，调用的其实时类的构造方法，当直接使用类名构建对象时，调用的其实是伴生对象的 apply 方法
+6. apply 方法使用的目的是用于创建对象，但是类型没有约束
+```scala
+// 在()之前加上private, 让主构造器变成私有
+class Person private(name: String) {
+    var name: String = name
+}
+
+object Person {
+    def apply(): Person = {
+        println("apply空参被调用")
+        new Person("xx")  // 伴生类中的私有属性或方法在伴生对象中可以直接使用
+    }
+
+    def apply(name: String): Person = {
+        println("apply有参被调用")
+        new Person(name)
     }
 }
 ```
