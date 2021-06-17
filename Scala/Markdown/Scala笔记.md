@@ -424,7 +424,9 @@ class A {
 4. “.” 表示从属关系，user.name = 用户中 的name 属性
 5. 方法的提供者：java.lang.Object
 6. 方法的调用者：com.atguigu.bigdata.java.TestProtected
-<img src="Scala笔记.assets/image-20210615164727864.png" alt="image-20210615164727864" style="zoom:75%;" />
+
+<img src="Scala笔记.assets/image-20210617171928156.png" alt="image-20210617171928156" style="zoom:45%;" />
+
 ```java
 public class TestProtected {
     public static void main(String[] args) throws Exception {
@@ -443,7 +445,8 @@ class A {
 1. 方法的提供者：com.atguigu.bigdata.java.A
 2. 方法的调用者：com.atguigu.bigdata.java.TestProtected
 3. A中重写clone()方法，clone()的提供者就发生改变，提供者和调用者属于同包，可以访问
-<img src="Scala笔记.assets/image-20210615165154893.png" alt="image-20210615165154893" style="zoom:75%;" />
+
+<img src="Scala笔记.assets/image-20210617172004230.png" alt="image-20210617172004230" style="zoom:50%;" />
 
 ## 类和对象
 静态和类有关系，和对象无关。Scala中没有静态，Scala是一个完全面向对象的语言
@@ -755,3 +758,178 @@ object Person {
     }
 }
 ```
+
+## 特质（Trait）
+scala 语言中，采用特质 trait（特征）来代替接口的概念，也就是说，多个类具有相同的特征（特征）时，就可以将这个特质（特征）独立出来，采用关键字trait声明。
+
+scala 中的 trait 中即可以有抽象属性和方法，也可以有具体的属性和方法，一个类采用 extends 关键字完成特征的引入（混入）。特征在编译时会自动产生接口，在类中混入特质时，等同于实现接口。特征中可以声明具体的方法，此时编译后会产生对应的抽象类。
+
+### 特质基本语法
+```scala
+trait 特质名 {
+    trait体
+}
+```
+1. 类和特质的关系：使用继承的关系
+2. 当一个类去继承特质时，第一个连接词是 extends，后面是 with
+3. 如果一个类在继承特质和父类时，应当把父类写在 extends 后
+4. 特质可以同时拥有抽象方法和具体方法
+5. 一个类可以混入（mixin）多个特质
+6. 所有的Java接口都可以当做 scala 特质使用
+7. 动态混入：可灵活的扩展类的功能
+```scala
+trait SexTrait {
+    var sex: String
+}
+
+val t2 = new Teacher with SexTrait {
+    override var sex: String = "男"	// 如果混入的trait中有未实现的方法，则需要实现
+}
+```
+
+### 特质叠加
+由于一个类可以混入（mixin）多个 trait，且 trait 中可以有具体的属性和方法，若混入的特质中具有相同的方法（方法名，参数列表，返回值均相同），必然会出现继承冲突问题。
+
+第一种，一个类（Sub）混入的两个 trait（TraitA，TraitB）中具有相同的具体方法，且两个 trait 之间没有任何关系，解决这类冲突问题，直接在类（Sub）中重写冲突方法。
+
+<img src="Scala笔记.assets/image-20210617171752694.png" alt="image-20210617171752694" style="zoom:50%;" />
+
+第二种，一个类（Sub）混入的两个 trait（TraitA，TraitB）中具有相同的具体方法，且两个 trait 继承自相同的 trait（TraitC），解决这类冲突问题，Scala采用了特质叠加的策略。
+
+<img src="Scala笔记.assets/image-20210617171829873.png" alt="image-20210617171829873" style="zoom:50%;" />
+
+```scala
+trait Ball {
+    def describe(): String = {
+        "ball"
+    }
+}
+
+trait Color extends Ball {
+    override def describe(): String = {
+        "blue-" + super.describe()
+    }
+}
+
+trait Category extends Ball {
+    override def describe(): String = {
+        "foot-" + super.describe()
+    }
+}
+
+class MyBall extends Category with Color {
+    override def describe(): String = {
+        "my ball is a " + super.describe()
+    }
+}
+
+object TestTrait {
+    def main(args: Array[String]): Unit = {
+        println(new MyBall().describe())    // my ball is a blue-foot-ball
+    }
+}
+```
+
+
+1. 如果父类和特质同时存在，那么会先加载父类，再加载特征
+2. 多个特质的加载顺序为从左到右，多个特质混入时，调用方法从右到左
+3. super 关键字时动态绑定的，不是表示其父特质对象，而是表示上述叠加顺序中的下一个特质，即，MyBall 中的 super 指代 Color，Color 中的 super 指代 Category，Category 中的 super 指代Ball
+4. 如果想要调用某个指定的混入特质中的方法，可以增加约束：super[]，例如：super[Category].describe()
+
+<img src="Scala笔记.assets/image-20210617171557910.png" alt="image-20210617171557910" style="zoom:50%;" />
+
+## 扩展
+### 类型检查和转换
+```scala
+class Person {}
+
+object Person {
+    def main(args: Array[String]): Unit = {
+        val person = new Person
+        //（1）判断对象是否为某个类型的实例
+        val bool: Boolean = person.isInstanceOf[Person]
+
+        if (bool) {
+            //（2）将对象转换为某个类型的实例
+            val p1: Person = person.asInstanceOf[Person]
+            println(p1)
+        }
+
+        //（3）获取类的信息
+        val pClass: Class[Person] = classOf[Person]
+        println(pClass)
+    }
+}
+```
+
+### 枚举类
+```scala
+object Color extends Enumeration {
+    val RED = Value(1, "red")
+    val YELLOW = Value(2, "yellow")
+    val BLUE = Value(3, "blue")
+}
+
+object Test {
+    def main(args: Array[String]): Unit = {
+        println(Color.RED)  // red
+    }
+}
+```
+
+### 应用类
+```scala
+object Test extends App {
+    println("xxx")	// xxx
+}
+```
+
+### Type 定义新类型
+使用 type 关键字可以定义新的数据数据类型名称，本质上就是类型的一个别名
+```scala
+type S=String
+var v:S="abc"
+def test():S="xyz"
+```
+
+# 集合
+## 集合简介
+1. scala 的集合有三大类：序列 Seq、集 Set、映射 Map，所有的集合都扩展自 Iterable 特质
+2. 对于几乎所有的集合类，Scala 都同时提供了可变和不可变的版本，分别位于两个包。scala.collection.immutable（不可变集合）、scala.collection.mutable（可变集合）
+3. scala 不可变集合，就是指该集合对象不可修改，每次修改就会返回一个新对象，而不会对原对象进行修改
+4. 可变集合，就是这个集合可以直接对原对象进行修改，而不会返回新的对象
+
+### 不可变集合继承图
+
+<img src="Scala笔记.assets/image-20210617173817593.png" alt="image-20210617173817593" style="zoom:40%;" />
+
+1. IndexSeq 是通过索引来查找和定位，因此速度快，比如 String 就是一个索引集合，通过索引即可定位；for 循环有也是 IndexedSeq 下的 Vector
+2. LineaSeq是线型的，即有头尾的概念，这种数据结构一般是通过遍历来查找
+3. scala 中的 Map 体系有一个 SortedMap，说明 scala 的 Map 可以支持排序
+
+### 可变集合继承图
+
+<img src="Scala笔记.assets/image-20210617173856551.png" alt="image-20210617173856551" style="zoom:50%;" />
+
+## 数组
+### 不可变数组
+```scala
+val arr1 = new Array[Int](10)
+val arr2 = Array(1, 2)	// 使用 apply 方法创建数组对象
+arr1.toBuffer	// 返回结果才是一个可变数组，arr1 本身没有变化
+```
+
+### 可变数组
+```scala
+import scala.collection.mutable.ArrayBuffer
+val arr = ArrayBuffer[Any](1, 2, 3)
+arr.toArray	// 返回结果才是一个不可变数组，arr 本身没有变化
+```
+
+### 多维数组
+```scala
+val arr = Array.ofDim[Double](3,4)	// 二维数组中有三个一维数组，每个一维数组中有四个元素
+```
+
+## Seq 集合（List）
+### 不可变 List
