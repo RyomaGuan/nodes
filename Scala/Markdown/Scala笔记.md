@@ -901,9 +901,11 @@ def test():S="xyz"
 # 集合
 ## 集合简介
 1. scala 的集合有三大类：序列 Seq、集 Set、映射 Map，所有的集合都扩展自 Iterable 特质
-2. 对于几乎所有的集合类，Scala 都同时提供了可变和不可变的版本，分别位于两个包。scala.collection.immutable（不可变集合）、scala.collection.mutable（可变集合）
-3. scala 不可变集合，就是指该集合对象不可修改，每次修改就会返回一个新对象，而不会对原对象进行修改
-4. 可变集合，就是这个集合可以直接对原对象进行修改，而不会返回新的对象
+2. 对于几乎所有的集合类，Scala 都同时提供了可变和不可变的版本，分别位于两个包
+3. scala 不可变集合，就是指该集合对象不可修改，每次修改就会返回一个新对象，而不会对原对象进行修改。类似于 Java 中的 String 对象
+4. 可变集合，就是这个集合可以直接对原对象进行修改，而不会返回新的对象。类似于 Java 中的 StringBuilder 对象
+5. 不可变集合: scala.collection.immutable
+6. 可变集合: scala.collection.mutable
 
 ### 不可变集合继承图
 
@@ -920,31 +922,71 @@ def test():S="xyz"
 ## 数组
 ### 不可变数组
 ```scala
-val arr1 = new Array[Int](10)
-val arr2 = Array(1, 2)	// 使用 apply 方法创建数组对象
-arr1.toBuffer	// 返回结果才是一个可变数组，arr1 本身没有变化
+val arr = Array[Int](1, 2, 3, 4)
+
+// 增加数据，但是会产生新的集合
+// 向数组最后追加数据
+arr.:+(5) // Array(1, 2, 3, 4, 5)
+arr :+ 5 // Array(1, 2, 3, 4, 5)
+// 向数组前面追加数据，运算符以 : 结尾，那么调用顺序从后往前
+arr.+:(5) // Array(5, 1, 2, 3, 4)
+5 +: arr // Array(5, 1, 2, 3, 4)
+
+// 增加其他集合中的所有元素
+arr.++(Array(4, 5)) // Array(1, 2, 3, 4)
+arr ++ Array(4, 5) // Array(1, 2, 3, 4)
 ```
 
 ### 可变数组
+ArrayBuffer需要引入scala.collection.mutable.ArrayBuffer，ArrayBuffer是有序的集合。
 ```scala
-import scala.collection.mutable.ArrayBuffer
-val arr = ArrayBuffer[Any](1, 2, 3)
-arr.toArray	// 返回结果才是一个不可变数组，arr 本身没有变化
+val buffer = ArrayBuffer[Int]()
+// 增加数据，改变的是底层数据结构
+// 向数组最后追加数据
+buffer.append(1, 2, 3, 4) // ArrayBuffer(1, 2, 3, 4)
+// 向指定的位置插入数据
+buffer.insert(3, 5, 6, 7) // ArrayBuffer(1, 2, 3, 5, 6, 7, 4)
+
+// 根据索引删除多少个数据
+buffer.remove(1) //ArrayBuffer(1, 3, 5, 6, 7, 4)
+buffer.remove(2, 3) // ArrayBuffer(1, 3, 4)
+
+// 修改数据
+buffer.update(0, 5) //  ArrayBuffer(5, 3, 4)
+buffer(0) = 10 // ArrayBuffer(10, 3, 4)
 ```
 
 ### 多维数组
 ```scala
 val arr = Array.ofDim[Double](3,4)	// 二维数组中有三个一维数组，每个一维数组中有四个元素
 ```
+### 不可变数组与可变数组的转换
+```scala
+arr.toBuffer	// 返回结果才是一个可变数组，arr 本身没有变化
+buffer.toArray	// 返回结果才是一个不可变数组，buffer 本身没有变化
+```
 
 ## Seq 集合（List）
 ### 不可变 List
+```scala
+// 空集合 Nil，用来增加数据
 
+val list = 1 :: 2 :: 3 :: 4 :: Nil // List(1, 2, 3, 4)
 
+// 增加数据
+list.::(5) // List(5, 1, 2, 3, 4)
+5 :: list // List(5, 1, 2, 3, 4)
 
+val list1 = List(5, 6)
+// 集合作为一个整体合并
+list :: list1 // List(List(1, 2, 3, 4), 5, 6)
 
+// 将一个整体拆成一个一个的个体来使用的方式，称为扁平化
+list.++(list1) // List
+list ::: list1 // List(1, 2, 3, 4, 5, 6)
+```
 
-
+### 可变 ListBuffer
 
 ## Set集合
 默认情况下，Scala使用的是不可变集合，如果你想使用可变集合，需要引用 scala.collection.mutable.Set 包
@@ -954,12 +996,49 @@ val arr = Array.ofDim[Double](3,4)	// 二维数组中有三个一维数组，每
 2. 数据不可重复
 
 ### 可变mutable.Set
+```scala
+val set = mutable.Set(2, 1, 2) // Set(1, 2)
 
+// 集合添加元素
+set.add(3) // Set(1, 2, 3)
+set += 8 // Set(1, 2, 3, 8)
 
+// 向集合中添加元素，返回一个新的Set，本身没有变化
+set.+(9) // Set(9, 1, 2, 3, 8)
 
+// 删除数据
+set -= 8 // Set(1, 2, 3)
+set.remove(2) // Set(1, 3)
+```
 
+## Map集合
+Scala中的Map和Java类似，也是一个散列表，它存储的内容也是键值对（key-value）映射，Scala中不可变的Map是有序的，可变的Map是无序的。
 
+Scala 中 K-V 对声明方式为: K -> V
+### 不可变Map
+默认创建不可变集合Map
 
+### 可变Map
+```scala
+val map = mutable.Map("a" -> 1, "b" -> 2, "c" -> 3) // Map(b -> 2, a -> 1, c -> 3)
+
+// 增加数据: + 会创建新的 Map 集合，如果需要使用同一集合，那么使用 += 运算符
+map.+("d" -> 4) // Map(b -> 2, a -> 1, c -> 3)
+map.+=("d" -> 4) // Map(b -> 2, d -> 4, a -> 1, c -> 3)
+map += ("e" -> 5) // Map(e -> 5, b -> 2, d -> 4, a -> 1, c -> 3)
+
+// 删除数据: + 会创建新的 Map 集合，如果需要使用同一集合，那么使用 += 运算符
+map.-("e") // Map(e -> 5, b -> 2, d -> 4, a -> 1, c -> 3)
+map.-=("e") // Map(b -> 2, d -> 4, a -> 1, c -> 3)
+map -= "d" // Map(b -> 2, a -> 1, c -> 3)
+
+// 查询
+// 使用get访问map集合的数据，会返回特殊类型Option(选项):有值（Some），无值(None)
+map.get("d") // None
+map.get("a") // Some(1)
+map.getOrElse("d", 0) // 0
+// map("d") // 如果查询不到指定的 key，会发生异常 NoSuchElementException
+```
 
 ## 元组
 元组也是可以理解为一个容器，可以存放各种相同或不同类型的数据。说的简单点，就是将多个无关的数据封装为一个整体，称为元组。元组中最大只能有22个元素。
@@ -1173,9 +1252,6 @@ que.enqueue("a", "b", "c")
 que.dequeue() // a
 que.dequeue() // b
 ```
-
-
-
 
 
 # 模式匹配
