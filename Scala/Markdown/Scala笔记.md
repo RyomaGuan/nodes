@@ -274,6 +274,12 @@ f()
 // 上面的代码可以简化为
 f1()()
 ```
+print 的参数是普通类型 (x: Any)，而函数是一个特殊的类型。print 不能传递函数，参数只能由别人传递，所以  _ 一定代表别人传递的参数，例如：array.foreach(print(_))，_ 一定代表 foreach 的参数，可以推断出来 x=>print(x)。否则没人提供，可以推断出来就可以省略。
+map(_)，但是这里的 map 就不一定可以推断出来。map 的参数函数，是特殊类型。比如 map(f  _)，这里的 _ 就有歧义
+1. f _ 是将 f 作为一个整体传入
+2. _ 是 f 的一个参数
+map(_*2) 可以，没有歧义，函数不可以*2，可以推断出 _ 代表参数，一定来源于 x=>x*2，此时可以省略
+
 
 ### 匿名函数
 匿名函数至简原则
@@ -933,3 +939,433 @@ val arr = Array.ofDim[Double](3,4)	// 二维数组中有三个一维数组，每
 
 ## Seq 集合（List）
 ### 不可变 List
+
+
+
+
+
+
+
+## Set集合
+默认情况下，Scala使用的是不可变集合，如果你想使用可变集合，需要引用 scala.collection.mutable.Set 包
+
+### 不可变Set
+1. Set默认是不可变集合，数据无序
+2. 数据不可重复
+
+### 可变mutable.Set
+
+
+
+
+
+
+
+## 元组
+元组也是可以理解为一个容器，可以存放各种相同或不同类型的数据。说的简单点，就是将多个无关的数据封装为一个整体，称为元组。元组中最大只能有22个元素。
+```scala
+val tuple: (Int, String, Boolean) = (40, "bo", true)
+
+tuple._1 // 通过元素的顺序进行访问，调用方式：_顺序号
+tuple.productElement(0) // 通过索引访问数据
+for (elem <- tuple.productIterator) {
+    println(elem) // 通过迭代器访问数据
+}
+```
+
+```scala
+// Map中的键值对其实就是元组,只不过元组的元素个数为2，称之为对偶
+val map = Map("a" -> 1, "b" -> 2, "c" -> 3)
+
+map.foreach(tuple => {
+    println(tuple._1 + "=" + tuple._2)
+})
+```
+
+## 集合常用函数
+### 基本属性和常用操作
+```scala
+val list: List[Int] = List(1, 2, 3, 4, 5, 6, 7)
+```
+#### 获取集合长度
+```scala
+list.length    // 7
+```
+
+#### 获取集合大小
+```scala
+list.size    // 7
+```
+
+#### 循环遍历
+```scala
+list.foreach(println)
+```
+
+#### 迭代器
+```scala
+for (elem <- list.iterator) {
+    println(elem)
+}
+```
+
+#### 生成字符串
+```scala
+list.mkString(",") // 1,2,3,4,5,6,7
+```
+
+#### 是否包含
+```scala
+list.contains(3)   // true
+```
+
+### 衍生集合
+```scala
+val list1: List[Int] = List(1, 2, 3, 4, 5, 6, 7)
+val list2: List[Int] = List(4, 5, 6, 7, 8, 9, 10)
+```
+#### 获取集合的头
+```scala
+list1.head // 1
+```
+#### 获取集合的尾（不是头的就是尾）
+```scala
+list1.tail // List(2, 3, 4, 5, 6, 7)
+```
+#### 集合最后一个数据
+```scala
+list1.last // 7
+```
+#### 集合初始数据（不包含最后一个）
+```scala
+list1.init // List(1, 2, 3, 4, 5, 6)
+```
+#### 反转
+```scala
+list1.reverse // List(7, 6, 5, 4, 3, 2, 1)
+```
+#### 取前（后）n个元素
+```scala
+list1.take(3) // List(1, 2, 3)
+list1.takeRight(3) // List(5, 6, 7)
+```
+#### 去掉前（后）n个元素
+```scala
+list1.drop(3) // List(4, 5, 6, 7)
+list1.dropRight(3) // List(1, 2, 3, 4)
+```
+#### 并集
+```scala
+list1.union(list2) // List(1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7, 8, 9, 10)
+```
+#### 交集
+```scala
+list1.intersect(list2) // List(4, 5, 6, 7)
+```
+#### 差集
+```scala
+list1.diff(list2) // List(1, 2, 3)
+```
+#### 拉链
+```scala
+list1.zip(list2) // List((1,4), (2,5), (3,6), (4,7), (5,8), (6,9), (7,10))
+```
+如果两个集合的元素个数不相等，那么会将同等数量的数据进行拉链，多余的数据省略不用
+#### 滑窗
+```scala
+list1.sliding(2, 5).mkString(",") // List(1, 2),List(6, 7)
+```
+
+### 集合计算初级函数
+```scala
+val list = List(1, 5, -3, 4)
+```
+#### 求和
+```scala
+list.sum // 7
+```
+#### 求乘积
+```scala
+list.product // -60
+```
+#### 最大值
+```scala
+list.max // 5
+```
+#### 最小值
+```scala
+list.min // -3
+```
+#### 排序
+```scala
+list.sortBy(x => x)    // List(-3, 1, 4, 5)
+list.sortBy(x => x.abs) // List(1, -3, 4, 5)
+list.sortWith((x, y) => x < y) // List(-3, 1, 4, 5)
+list.sortWith((x, y) => x > y) // List(5, 4, 1, -3)
+```
+
+### 集合计算高级函数
+```scala
+val list: List[Int] = List(1, 2, 3, 4, 5, 6, 7, 8, 9)
+val nestedList: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9)
+val wordList: List[String] = List("hello world", "hello scala")
+```
+#### 过滤
+```scala
+list.filter(x => x % 2 == 0) // List(2, 4, 6, 8)
+```
+#### 转化/映射
+```scala
+list.map(x => x + 1) // List(2, 3, 4, 5, 6, 7, 8, 9, 10)
+```
+#### 扁平化
+```scala
+nestedList.flatten // List(1, 2, 3, 4, 5, 6, 7, 8, 9)
+```
+#### 扁平化+映射：
+flatMap相当于先进行map操作，在进行flatten操作
+```scala
+wordList.flatMap(x => x.split(" ")) // List(hello, world, hello, scala)
+```
+#### 分组
+```scala
+list.groupBy(x => x % 2) // Map(1 -> List(1, 3, 5, 7, 9), 0 -> List(2, 4, 6, 8)
+```
+#### 简化（规约）
+Reduce方法通过指定的逻辑将集合中的数据进行聚合，从而减少数据，最终获取结果。
+```scala
+val list = List(1, 2, 3, 4)
+list.reduce((x, y) => x - y) // -8
+list.reduceRight((x, y) => x - y) // ((4-3)-2-1) = -2
+```
+从源码的角度，reduce底层调用的其实就是reduceLeft
+#### 折叠
+Fold折叠是化简的一种特殊情况。fold方法使用了函数柯里化，存在两个参数列表。第一个参数列表为零值（初始值）
+```scala
+val list = List(1, 2, 3, 4)
+
+list.foldLeft(1)((x, y) => x - y) // -9
+list.foldRight(10)((x, y) => x - y) // 8
+```
+
+```scala
+// 两个Map的数据合并
+val map1 = mutable.Map("a" -> 1, "b" -> 2, "c" -> 3)
+val map2 = mutable.Map("a" -> 4, "b" -> 5, "d" -> 6)
+
+// Map(b -> 7, d -> 6, a -> 5, c -> 3)
+val map3 = map2.foldLeft(map1) {
+    (map, kv) => {
+        val (k, v) = kv
+        map(k) = map.getOrElse(k, 0) + v
+        map
+    }
+}
+```
+fold底层其实为foldLeft
+
+### 队列
+Scala也提供了队列（Queue）的数据结构，队列的特点就是先进先出。进队和出队的方法分别为enqueue和dequeue。
+```scala
+val que = new mutable.Queue[String]()
+
+que.enqueue("a", "b", "c")
+que.dequeue() // a
+que.dequeue() // b
+```
+
+
+
+
+
+# 模式匹配
+scala 中的模式匹配类似于 java 中的 switch 语法，但是更加强大。模式匹配语法中，采用match关键字声明，每个分支采用 case 关键字进行声明，当需要匹配时，会从第一个 case 分支开始，如果匹配成功，那么执行对应的逻辑代码，如果匹配不成功，继续执行下一个分支进行判断。如果所有 case 都不匹配，那么会执行 case _ 分支，类似于 java 中 default 语句。
+
+## 基本语法
+1. 如果所有 case 都不匹配，那么会执行 case _  分支，类似于 java 中 default 语句，若没有 case _ 分支，那么会抛出 MatchError
+2. 每个case中，不用break语句，自动中断case
+3. match case语句可以匹配任何类型，而不只是字面量
+4. => 后面的代码块，是作为一个整体执行，可以使用{}括起来，也可以不括
+
+## 模式匹配类型
+### 匹配常量
+Scala中，模式匹配可以匹配所有的字面量，包括字符串，字符，数字，布尔值等等。
+```scala
+var a: Int = 10
+var b: Int = 20
+var operator: Char = 'd'
+
+var result = operator match {
+    case '+' => a + b
+    case '-' => a - b
+    case '*' => a * b
+    case '/' => a / b
+    case _ => "illegal"  
+}
+```
+
+### 匹配类型
+需要进行类型判断时，可以使用前文所学的isInstanceOf[T]和asInstanceOf[T]，也可使用模式匹配实现同样的功能。
+```scala
+def describe(x: Any) = x match {
+    case i: Int => "Int"
+    case s: String => "String hello"
+    case m: List[_] => "List"
+    case c: Array[Int] => "Array[Int]"
+    case someThing => "something else " + someThing
+}
+```
+
+### 模式守卫
+如果想要表达匹配某个范围的数据，就需要在模式匹配中增加条件守卫。
+```scala
+def abs(x: Int) = x match {
+    case i: Int if i >= 0 => i
+    case j: Int if j < 0 => -j
+    case _ => "type illegal"
+}
+```
+
+### 匹配数组
+scala模式匹配可以对集合进行精确的匹配，例如匹配只有两个元素的、且第一个元素为0的数组。
+```scala
+val result = arr match {
+    case Array(0) => "0" //匹配Array(0) 这个数组
+    case Array(x, y) => x + "," + y //匹配有两个元素的数组，然后将将元素值赋给对应的x,y
+    case Array(0, _*) => "以0开头的数组" //匹配以0开头和数组
+    case _ => "something else"
+}
+```
+
+### 匹配列表
+```scala
+val result = list match {
+    case List(0) => "0" //匹配List(0)
+    case List(x, y) => x + "," + y //匹配有两个元素的List
+    case List(0, _*) => "0 ..."
+    case _ => "something else"
+}
+```
+```scala
+val list = List(1, 2, 5, 6, 7)
+list match {
+    case first :: second :: rest => println(first + "-" + second + "-" + rest)  // 1-2-List(5, 6, 7)
+    case _ => println("something else")
+}
+```
+
+### 匹配元组
+```scala
+val result = tuple match {
+    case (0, _) => "0 ..." //是第一个元素是0的元组
+    case (y, 0) => "" + y + "0" // 匹配后一个元素是0的对偶元组
+    case (a, b) => "" + a + " " + b
+    case _ => "something else" //默认
+}
+```
+
+### 匹配对象及样例类
+#### 样例类
+```scala
+case class Person (name: String, age: Int)
+```
+
+```scala
+def unapply(user: User): Option[(String, Int)] = {
+    if (user == null)
+        None
+    else
+        Some(user.name, user.age)
+}
+```
+
+1. 样例类仍然是类，和普通类相比，只是其自动生成了伴生对象，并且伴生对象中自动提供了一些常用的方法，如apply、unapply、toString、equals、hashCode和copy
+2. 样例类是为模式匹配而优化的类，因为其默认提供了unapply方法，因此，样例类可以直接使用模式匹配，而无需自己实现unapply方法
+3. 构造器中的每一个参数都成为val，除非它被显式地声明为var（不建议这样做）
+4. 若只提取对象的一个属性，则提取器为unapply(obj:Obj):Option[T]
+5. 若提取对象的多个属性，则提取器为unapply(obj:Obj):Option[(T1,T2,T3…)]
+6. 若提取对象的可变个属性，则提取器为unapplySeq(obj:Obj):Option[Seq[T]]
+
+#### 匹配对象
+```scala
+case class User(name: String, age: Int) {}
+
+val user: User = User("zhangsan", 11)
+val result = user match {
+    case User("zhangsan", 11) => "yes"
+    case _ => "no"
+}
+```
+1. val user = User("zhangsan",11)，该语句在执行时，实际调用的是User伴生对象中的apply方法，因此不用new关键字就能构造出相应的对象。
+2. 当将User("zhangsan", 11)写在case后时[case User("zhangsan", 11) => "yes"]，会默认调用unapply方法(对象提取器)，user作为unapply方法的参数，unapply方法将user对象的name和age属性提取出来，与User("zhangsan", 11)中的属性值进行匹配
+3. case中对象的unapply方法(提取器)返回Some，且所有属性均一致，才算匹配成功,属性不一致，或返回None，则匹配失败。
+
+### 变量声明中的模式匹配
+```scala
+case class Person(name: String, age: Int)
+
+val (x, y) = (1, 2) // x=1,y=2
+val Array(first, second, _*) = Array(1, 7, 2, 9)    // first=1,second=7
+val Person(name, age) = Person("zhangsan", 16)  // name=zhangsan,age=16
+```
+
+### for表达式中的模式匹配
+```scala
+val map = Map("A" -> 1, "B" -> 0, "C" -> 3)
+
+for ((k, v) <- map) {
+    println(k + "->" + v) // A->1、B->0、c->3
+}
+
+for ((k, 0) <- map) {
+    println(k + "->" + 0) // B->0
+}
+
+for ((k, v) <- map if v >= 1) {
+    println(k + "->" + v) // A->1、c->3
+}
+```
+
+
+# 异常
+## Java 异常处理
+1. Java语言按照try—catch—finally的方式来处理异常
+2. 不管有没有异常捕获，都会执行finally，因此通常可以在finally代码块中释放资源
+3. 可以有多个catch，分别捕获对应的异常，这时需要把范围小的异常类写在前面，把范围大的异常类写在后面，否则编译错误
+
+## Scala异常处理
+```scala
+try {
+    var n = 10 / 0
+} catch {
+    case ex: ArithmeticException =>
+        println("发生算术异常")
+    case ex: Exception =>
+        println("发生了异常1")
+        println("发生了异常2")
+} finally {
+    println("finally")
+}
+```
+
+```scala
+def test():Nothing = {
+    throw new Exception("ERROR")
+}
+```
+
+```scala
+@throws(classOf[NumberFormatException])
+def f11()={
+  	"abc".toInt
+}
+
+f11()
+```
+1. 我们将可疑代码封装在try块中。在try块之后使用了一个catch处理程序来捕获异常。如果发生任何异常，catch处理程序将处理它，程序将不会异常终止
+2. Scala的异常的工作机制和Java一样，但是Scala没有“checked（编译期）”异常，即Scala没有编译异常这个概念，异常都是在运行的时候捕获处理
+3. 异常捕捉的机制与其他语言中一样，如果有异常发生，catch子句是按次序捕捉的。因此，在catch子句中，越具体的异常越要靠前，越普遍的异常越靠后，如果把越普遍的异常写在前，把具体的异常写在后，在Scala中也不会报错，但这样是非常不好的编程风格
+4. finally子句用于执行不管是正常处理还是有异常发生时都需要执行的步骤，一般用于对象的清理工作，这点和Java一样
+5. 用throw关键字，抛出一个异常对象。所有异常都是Throwable的子类型。throw表达式是有类型的，就是Nothing，因为Nothing是所有类型的子类型，所以throw表达式可以用在需要类型的地方
+6. Scala提供了throws关键字来声明异常。可以使用方法定义声明异常。它向调用者函数提供了此方法可能引发此异常的信息。它有助于调用函数处理并将该代码包含在try-catch块中，以避免程序异常终止。在Scala中，可以使用throws注释来声明异常
+
